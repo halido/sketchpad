@@ -5,7 +5,7 @@ import html from './index.html';
 
 
 class Sketchpad {
-    constructor({ el, height = 400, toolBtnSize = 50, saveBtn = true, toolList = ['Brush'], maxRecall = 5 }) {
+    constructor({ el, height = 400, toolBtnSize = 50, saveBtn = true, toolList = ['Brush'], maxRecall = 5, clearBtn = true }) {
         //定义tool按钮大小
         this.toolBtnSize = toolBtnSize;
         //设备像素px比
@@ -14,6 +14,7 @@ class Sketchpad {
         this.maxRecall = maxRecall;
         //是否显示保存按钮
         this.saveBtn = saveBtn;
+        this.clearBtn = clearBtn;
 
         if (typeof el === 'string') {
             try {
@@ -72,6 +73,22 @@ class Sketchpad {
 
         //执行初始化函数 注册toolList中的工具
         this.init(toolList);
+    }
+
+    drawPathLines(canvas) {
+
+        const context = canvas.getContext("2d");
+        context.strokeStyle = "rgb(0,0,0)";
+        context.lineWidth = 3;
+        const lineHeight = (100 * this.dpr);
+        //draw grid
+        for (let i = 1; i <= canvas.height / (100 * this.dpr); i++) {
+            const y = i * lineHeight;
+            context.moveTo(0, y);
+            context.lineTo(canvas.width, y);
+            context.stroke();
+        }
+
     }
     //初始化
     init(toolList) {
@@ -227,6 +244,11 @@ class Sketchpad {
             saveBtnEl.style.display = 'inline-block';
             saveBtnEl.addEventListener('click', this.save.bind(this, 'btn'));
         }
+        if (this.clearBtn) {
+            const clearBtnEl = this.containerEl.querySelector('.clear');
+            clearBtnEl.style.display = 'inline-block';
+            clearBtnEl.addEventListener('click', this.clean.bind(this, 'btn'));
+        }
     }
     //变更当前的tool 传入的是一个tool实例
     toolChange(tool) {
@@ -327,7 +349,6 @@ class Sketchpad {
         //清空mainCanvas且重新绘制mainCanvas
         this.mainCanvasCtx.clearRect(0, 0, this.mainCanvasEl.width, this.mainCanvasEl.height);
         this.mainCanvasCtx.drawImage(tmpCanvasEl, 0, 0);
-
         //处理recallbtn状态
         this.recallBtnStatus();
     }
@@ -357,16 +378,16 @@ class Sketchpad {
             ctx.fillStyle = "white";
             ctx.fillRect(0, 0, saveCanvas.width, saveCanvas.height);
             ctx.drawImage(this.mainCanvasEl, 0, 0);
-
+            this.drawPathLines(saveCanvas);
             try {
                 //ie兼容
                 const blob = saveCanvas.msToBlob();
-                window.navigator.msSaveBlob(blob, "picture.png");
+                window.navigator.msSaveBlob(blob, "draw.png");
             } catch (error) {
                 const a = document.createElement('a');
                 a.href = saveCanvas.toDataURL('image/png');
                 a.target = '__blank';
-                a.download = "picture.png";
+                a.download = "draw.png";
                 var event = document.createEvent("MouseEvents");
                 event.initMouseEvent(
                     "click",
@@ -400,6 +421,7 @@ class Sketchpad {
         this.renderList = [];
         this.recallBackList = [];
         this.recallBtnStatus();
+
     }
 
     destroy() { }
