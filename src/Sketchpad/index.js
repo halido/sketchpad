@@ -73,22 +73,39 @@ class Sketchpad {
 
         //执行初始化函数 注册toolList中的工具
         this.init(toolList);
+        this.drawPathLines(this.mainCanvasEl);
     }
 
     drawPathLines(canvas) {
 
         const context = canvas.getContext("2d");
-        context.strokeStyle = "rgb(0,0,0)";
+
+        context.lineWidth = 10;
+        const lineHeight = (canvas.height / 3);
+
+        context.strokeStyle = "rgb(255, 2, 0)";
+        context.beginPath();
+        context.moveTo(0, 5);
+        context.lineTo(canvas.width, 5);
+
+        context.moveTo(0, canvas.height - 5);
+        context.lineTo(canvas.width, canvas.height - 5);
+        context.stroke();
+
         context.lineWidth = 3;
-        const lineHeight = (100 * this.dpr);
+        context.strokeStyle = "#09f";
         //draw grid
-        for (let i = 1; i <= canvas.height / (100 * this.dpr); i++) {
+        for (let i = 1; i < canvas.height / lineHeight; i++) {
+            context.beginPath();
             const y = i * lineHeight;
             context.moveTo(0, y);
             context.lineTo(canvas.width, y);
             context.stroke();
         }
 
+        context.strokeStyle = "#09f";
+        context.beginPath();
+        context.stroke();
     }
     //初始化
     init(toolList) {
@@ -348,6 +365,7 @@ class Sketchpad {
 
         //清空mainCanvas且重新绘制mainCanvas
         this.mainCanvasCtx.clearRect(0, 0, this.mainCanvasEl.width, this.mainCanvasEl.height);
+        this.drawPathLines(this.mainCanvasEl);
         this.mainCanvasCtx.drawImage(tmpCanvasEl, 0, 0);
         //处理recallbtn状态
         this.recallBtnStatus();
@@ -375,19 +393,19 @@ class Sketchpad {
             saveCanvas.width = this.mainCanvasEl.width;
             saveCanvas.height = this.mainCanvasEl.height;
             const ctx = saveCanvas.getContext("2d");
+            this.drawPathLines(saveCanvas);
             ctx.fillStyle = "white";
             ctx.fillRect(0, 0, saveCanvas.width, saveCanvas.height);
             ctx.drawImage(this.mainCanvasEl, 0, 0);
-            this.drawPathLines(saveCanvas);
             try {
                 //ie兼容
                 const blob = saveCanvas.msToBlob();
-                window.navigator.msSaveBlob(blob, "draw.png");
+                window.navigator.msSaveBlob(blob, "tooyp.jpeg");
             } catch (error) {
                 const a = document.createElement('a');
-                a.href = saveCanvas.toDataURL('image/png');
+                a.href = saveCanvas.toDataURL('image/jpeg',0.5);
                 a.target = '__blank';
-                a.download = "draw.png";
+                a.download = "tooyp.jpeg";
                 var event = document.createEvent("MouseEvents");
                 event.initMouseEvent(
                     "click",
@@ -418,6 +436,7 @@ class Sketchpad {
     clean() {
         this.frontCanvasCtx.clearRect(0, 0, this.frontCanvasEl.width, this.frontCanvasEl.height);
         this.mainCanvasCtx.clearRect(0, 0, this.mainCanvasEl.width, this.mainCanvasEl.height);
+        this.drawPathLines(this.mainCanvasEl);
         this.renderList = [];
         this.recallBackList = [];
         this.recallBtnStatus();

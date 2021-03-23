@@ -3,7 +3,23 @@
     :global(.btnContainer){
         padding:10px 5px;
         display: flex;
-        >*{
+        >div:global(.function){
+            width: 40px;
+            height:40px;
+            background-size: 20px 20px;
+            background-position: center ;
+            background-repeat: no-repeat;
+            cursor: pointer;
+        }
+        >div:global(.seperator){
+            flex-basis: auto;
+            margin: .25em 0;
+            padding: 0 1em;
+            text-align: center;
+            border-left: 1px solid #ccc;
+            background-color: #fff;
+        }
+        >button{
             border-radius: 4px;
             background-color: white;
             background-repeat: no-repeat;
@@ -17,33 +33,6 @@
         }
         :global(.active){
             border: 1px solid black;
-        }
-
-    }
-    :global(.optionContainer){
-        box-sizing: border-box;
-        padding: 10px 20px;
-        >div{
-            display: none;
-        }
-        :global(.active){
-            display: block;
-        }
-    }
-
-    :global(.functionContainer){
-        // text-align: right;
-        // line-height: 1px;
-        display: flex;
-        justify-content: flex-end;
-
-        >div{
-            width: 30px;
-            height:30px;
-            background-size: 20px 20px;
-            background-position: center ;
-            background-repeat: no-repeat;
-            cursor: pointer;
         }
         :global(.save){
             display: none;
@@ -70,15 +59,28 @@
         :global(.noRecallBack){
             opacity: 0.2;
         }
+
     }
+    :global(.optionContainer){
+        box-sizing: border-box;
+        padding: 10px 20px;
+        >div{
+            display: none;
+        }
+        :global(.active){
+            display: block;
+        }
+    }
+
+  
     :global(.noMouse){
         cursor: none;
     }
     :global(.canvasContainer){
         overflow: hidden;
         position: relative;
-        background-color: rgb(255,255,255);
-        background-image: url("@/Sketchpad/img/background.svg");
+        //background-color: rgb(255,255,255);
+        //background-image: url("@/Sketchpad/img/background.svg");
         box-shadow: 1px 1px 6px 0 rgb(133, 133, 133);
         :global(.frontCanvas){
             height: 100%;

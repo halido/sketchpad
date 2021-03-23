@@ -31,21 +31,10 @@ class Brush {
         this.optionEl.innerHTML = html;
 
         //定义size标识
-        this.tipEl = this.optionEl.querySelector('.tip');
 
 
 
 
-
-        const sizeSliderEl = new SizeSlider({
-            ratio: (this.lineWidth - this.lineWidthRange[0]) / (this.lineWidthRange[1] - this.lineWidthRange[0]),
-            sliderSize: 30
-        }).El;
-        sizeSliderEl.addEventListener('sliderChange', (e) => {
-            const size = (this.lineWidthRange[1] - this.lineWidthRange[0]) * e.detail + this.lineWidthRange[0];
-            this.sizeChange(size)
-        })
-        this.optionEl.querySelector('.sizeSliderBox').appendChild(sizeSliderEl);
 
 
         const colorSliderEl = new ColorSlider({}).El;
@@ -63,13 +52,11 @@ class Brush {
 
     sizeChange(v) {
         this.lineWidth = v;
-        this.tipEl.style.width = v + 'px';
-        this.tipEl.style.height = v + 'px';
+     
     }
 
     colorChange(color) {
         this.color = color;
-        this.tipEl.style.backgroundColor = color;
     }
 
 
