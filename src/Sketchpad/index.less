@@ -86,11 +86,22 @@
             position: absolute;
             top: 0;
             left: 0;
-            z-index: 2;
+            z-index: 3;
+        }
+        :global(.backCanvas){
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+            background-color: white;
         }
         :global(.mainCanvas){
             height: 100%;
-            z-index: 1;
+            z-index: 2;
+            position: absolute;
+            top: 0;
+            left: 0;
         }
 
     }

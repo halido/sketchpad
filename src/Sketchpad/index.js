@@ -5,7 +5,7 @@ import html from './index.html';
 
 
 class Sketchpad {
-    constructor({ el, height = 400, toolBtnSize = 50, saveBtn = true, toolList = ['Brush'], maxRecall = 5, clearBtn = true }) {
+    constructor({ el, height = 400, toolBtnSize = 50, saveBtn = true, toolList = ['Brush'], maxRecall = 5, clearBtn = true, pathLines = true }) {
         //定义tool按钮大小
         this.toolBtnSize = toolBtnSize;
         //设备像素px比
@@ -15,6 +15,7 @@ class Sketchpad {
         //是否显示保存按钮
         this.saveBtn = saveBtn;
         this.clearBtn = clearBtn;
+        this.pathLines = pathLines;
 
         if (typeof el === 'string') {
             try {
@@ -39,11 +40,11 @@ class Sketchpad {
         //工具选项div容器 用于放置各组件对应的选项组合 
         this.optionContainerEl = this.containerEl.querySelector('.optionContainer');
 
-        //前置canvas 用于绘制交互层 对所有工具暴露 默认是display none状态
+        //The front canvas is used to draw the interactive layer and is exposed to all tools. The default is display none state
         this.frontCanvasEl = this.containerEl.querySelector('.frontCanvas');
         this.frontCanvasEl.height = height * this.dpr;//高清适配
         this.frontCanvasCtx = this.frontCanvasEl.getContext('2d');
-        //主体canvas 用于绘制图形 撤销功能在这一层 对所有工具暴露
+        //The main canvas is used to draw graphics. The undo function is exposed to all tools on this layer
         this.mainCanvasEl = this.containerEl.querySelector('.mainCanvas');
         this.mainCanvasEl.height = height * this.dpr;
         this.mainCanvasCtx = this.mainCanvasEl.getContext('2d');
@@ -52,6 +53,10 @@ class Sketchpad {
         this.canvasContainerEl = this.containerEl.querySelector('.canvasContainer');
         this.canvasContainerEl.style.height = height + 'px';
 
+
+        this.backCanvasEl = this.containerEl.querySelector('.backCanvas');
+        this.backCanvasEl.height = height * this.dpr;
+        this.backCanvasCtx = this.backCanvasEl.getContext('2d');
 
         //回退canvas层 用于保存maxRecall次数限制之前的绘制层  是撤回功能的主要实现
         this.recallCanvasEl = document.createElement('canvas');
@@ -73,17 +78,19 @@ class Sketchpad {
 
         //执行初始化函数 注册toolList中的工具
         this.init(toolList);
-        this.drawPathLines(this.mainCanvasEl);
+        this.drawPathLines(this.backCanvasEl);
     }
 
     drawPathLines(canvas) {
 
+        if (!this.pathLines)
+            return;
         const context = canvas.getContext("2d");
 
         context.lineWidth = 10;
         const lineHeight = (canvas.height / 3);
 
-        context.strokeStyle = "rgb(255, 2, 0)";
+        context.strokeStyle = "#09f";
         context.beginPath();
         context.moveTo(0, 5);
         context.lineTo(canvas.width, 5);
@@ -93,7 +100,7 @@ class Sketchpad {
         context.stroke();
 
         context.lineWidth = 3;
-        context.strokeStyle = "#09f";
+        context.strokeStyle = "rgb(255, 2, 0)";
         //draw grid
         for (let i = 1; i < canvas.height / lineHeight; i++) {
             context.beginPath();
@@ -127,6 +134,11 @@ class Sketchpad {
         //初始化canvas尺寸
         this.frontCanvasEl.width = this.canvasContainerEl.clientWidth * this.dpr;
         this.frontCanvasEl.style.width = this.canvasContainerEl.clientWidth + 'px';
+
+        //初始化canvas尺寸
+        this.backCanvasEl.width = this.canvasContainerEl.clientWidth * this.dpr;
+        this.backCanvasEl.style.width = this.canvasContainerEl.clientWidth + 'px';
+
 
         this.mainCanvasEl.width = this.canvasContainerEl.clientWidth * this.dpr;
         this.mainCanvasEl.style.width = this.canvasContainerEl.clientWidth + 'px';
@@ -295,11 +307,15 @@ class Sketchpad {
         this.resizeTimer = setTimeout(() => {
             this.frontCanvasEl.width = this.canvasContainerEl.clientWidth * this.dpr;
             this.frontCanvasEl.style.width = this.canvasContainerEl.clientWidth + 'px';
+            this.backCanvasEl.width = this.canvasContainerEl.clientWidth * this.dpr;
+            this.backCanvasEl.style.width = this.canvasContainerEl.clientWidth + 'px';
             this.mainCanvasEl.style.width = this.canvasContainerEl.clientWidth + 'px';
             //canvas尺寸重置的封装函数 实现了修改canvas大小补清空内容
             canvasResize(this.mainCanvasEl, this.mainCanvasCtx, this.canvasContainerEl.clientWidth * this.dpr);
             canvasResize(this.recallCanvasEl, this.recallCanvasCtx, this.canvasContainerEl.clientWidth * this.dpr);
-        }, 200);
+            canvasResize(this.backCanvasEl, this.backCanvasCtx, this.canvasContainerEl.clientWidth * this.dpr);
+            this.drawPathLines(this.backCanvasEl);
+        }, 100);
     }
 
 
@@ -365,7 +381,6 @@ class Sketchpad {
 
         //清空mainCanvas且重新绘制mainCanvas
         this.mainCanvasCtx.clearRect(0, 0, this.mainCanvasEl.width, this.mainCanvasEl.height);
-        this.drawPathLines(this.mainCanvasEl);
         this.mainCanvasCtx.drawImage(tmpCanvasEl, 0, 0);
         //处理recallbtn状态
         this.recallBtnStatus();
@@ -393,9 +408,9 @@ class Sketchpad {
             saveCanvas.width = this.mainCanvasEl.width;
             saveCanvas.height = this.mainCanvasEl.height;
             const ctx = saveCanvas.getContext("2d");
-            this.drawPathLines(saveCanvas);
             ctx.fillStyle = "white";
             ctx.fillRect(0, 0, saveCanvas.width, saveCanvas.height);
+            ctx.drawImage(this.backCanvasEl, 0, 0);
             ctx.drawImage(this.mainCanvasEl, 0, 0);
             try {
                 //ie兼容
@@ -403,7 +418,7 @@ class Sketchpad {
                 window.navigator.msSaveBlob(blob, "tooyp.jpeg");
             } catch (error) {
                 const a = document.createElement('a');
-                a.href = saveCanvas.toDataURL('image/jpeg',0.5);
+                a.href = saveCanvas.toDataURL('image/jpeg', 0.5);
                 a.target = '__blank';
                 a.download = "tooyp.jpeg";
                 var event = document.createEvent("MouseEvents");
@@ -436,7 +451,6 @@ class Sketchpad {
     clean() {
         this.frontCanvasCtx.clearRect(0, 0, this.frontCanvasEl.width, this.frontCanvasEl.height);
         this.mainCanvasCtx.clearRect(0, 0, this.mainCanvasEl.width, this.mainCanvasEl.height);
-        this.drawPathLines(this.mainCanvasEl);
         this.renderList = [];
         this.recallBackList = [];
         this.recallBtnStatus();

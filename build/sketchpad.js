@@ -884,7 +884,9 @@ var Sketchpad = function () {
             _ref$maxRecall = _ref.maxRecall,
             maxRecall = _ref$maxRecall === undefined ? 5 : _ref$maxRecall,
             _ref$clearBtn = _ref.clearBtn,
-            clearBtn = _ref$clearBtn === undefined ? true : _ref$clearBtn;
+            clearBtn = _ref$clearBtn === undefined ? true : _ref$clearBtn,
+            _ref$pathLines = _ref.pathLines,
+            pathLines = _ref$pathLines === undefined ? true : _ref$pathLines;
 
         _classCallCheck(this, Sketchpad);
 
@@ -897,6 +899,7 @@ var Sketchpad = function () {
         //是否显示保存按钮
         this.saveBtn = saveBtn;
         this.clearBtn = clearBtn;
+        this.pathLines = pathLines;
 
         if (typeof el === 'string') {
             try {
@@ -959,12 +962,13 @@ var Sketchpad = function () {
         key: 'drawPathLines',
         value: function drawPathLines(canvas) {
 
+            if (!this.pathLines) return;
             var context = canvas.getContext("2d");
 
             context.lineWidth = 10;
             var lineHeight = canvas.height / 3;
 
-            context.strokeStyle = "rgb(255, 2, 0)";
+            context.strokeStyle = "#09f";
             context.beginPath();
             context.moveTo(0, 5);
             context.lineTo(canvas.width, 5);
@@ -974,7 +978,7 @@ var Sketchpad = function () {
             context.stroke();
 
             context.lineWidth = 3;
-            context.strokeStyle = "#09f";
+            context.strokeStyle = "rgb(255, 2, 0)";
             //draw grid
             for (var i = 1; i < canvas.height / lineHeight; i++) {
                 context.beginPath();
@@ -1204,8 +1208,8 @@ var Sketchpad = function () {
                 _this4.frontCanvasEl.style.width = _this4.canvasContainerEl.clientWidth + 'px';
                 _this4.mainCanvasEl.style.width = _this4.canvasContainerEl.clientWidth + 'px';
                 //canvas尺寸重置的封装函数 实现了修改canvas大小补清空内容
-                (0, _Canvas.canvasResize)(_this4.mainCanvasEl, _this4.mainCanvasCtx, _this4.canvasContainerEl.clientWidth * _this4.dpr);
-                (0, _Canvas.canvasResize)(_this4.recallCanvasEl, _this4.recallCanvasCtx, _this4.canvasContainerEl.clientWidth * _this4.dpr);
+                (0, _Canvas.canvasResize)(_this4.mainCanvasEl, _this4.mainCanvasCtx, _this4.canvasContainerEl.clientWidth * _this4.dpr, _this4.canvasContainerEl.clientHeight * _this4.dpr);
+                (0, _Canvas.canvasResize)(_this4.recallCanvasEl, _this4.recallCanvasCtx, _this4.canvasContainerEl.clientWidth * _this4.dpr, _this4.canvasContainerEl.clientHeight * _this4.dpr);
             }, 200);
         }
 
